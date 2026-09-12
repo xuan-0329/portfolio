@@ -1,0 +1,14 @@
+# 依赖与构建产物
+node_modules/
+dist/
+.vite/
+
+# 本地设计校对截图（不进仓库，避免仓库无谓变大）
+.preview/
+
+# 杂项
+.DS_Store
+*.log
+npm-debug.log*
+.env
+.env.*

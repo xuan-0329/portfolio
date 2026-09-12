@@ -1,0 +1,13 @@
+# Vite 输出的带哈希资源 → 永久缓存
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# 静态素材（图片 / 视频 / PDF / 文档）→ 缓存 7 天
+/work/*
+  Cache-Control: public, max-age=604800
+/pdf/*
+  Cache-Control: public, max-age=604800
+
+# HTML 入口不缓存，保证发版即时生效
+/
+  Cache-Control: public, max-age=0, must-revalidate
