@@ -220,7 +220,7 @@ function StageCanvas({ stage, hidden }) {
     const ctx = canvas.getContext('2d')
 
     const imgs = [new Image(), new Image(), new Image()]
-    let loaded = 0
+    const ready = [false, false, false]
     let alive = true
     let W = 0
     let H = 0
@@ -266,16 +266,19 @@ function StageCanvas({ stage, hidden }) {
     const loop = (now) => {
       if (!alive) return
       raf = requestAnimationFrame(loop)
-      if (loaded < 3 || !W || !H) return
+      if (!W || !H) return
+      /* 关键：首屏不等全部图片 —— 当前 stage 的图一到就画。
+         原来等 3 张全下完才开始画，弱网下首开是好几秒纯星空 */
+      const si = stageRef.current
+      if (!ready[si] || hiddenRef.current) return
       // 视频期间保留画布上的最后一帧画面（不清空）：
       // 视频起播前/卡顿时，这帧静态画面垫在视频黑底之下，避免露出生效层星空
-      if (hiddenRef.current) return
       ctx.clearRect(0, 0, W, H)
-      paint(imgs[stageRef.current], kb(stageRef.current, now))
+      paint(imgs[si], kb(si, now))
     }
 
-    imgs.forEach((im) => {
-      im.onload = () => { loaded++ }
+    imgs.forEach((im, i) => {
+      im.onload = () => { ready[i] = true }
     })
     imgs[0].src = SRC[0]
     imgs[1].src = SRC[1]
@@ -387,21 +390,27 @@ export default function Hero3() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  /* 空闲时预热全部过渡视频（进 HTTP 缓存）：触发过渡的瞬间直接起播，
-     不再出现"等下载→冻一下→突然跳帧"的卡顿感 */
+  /* 空闲时预热过渡视频（进 HTTP 缓存）：触发过渡的瞬间直接起播，
+     不再出现"等下载→冻一下→突然跳帧"的卡顿感。
+     分两批：首开带宽优先留给首屏图片，1.5s 只取最可能用到的 '01' 正向片，
+     反向片和 '12' 延到 9s 之后再取，避免和首屏渲染抢带宽造成卡顿 */
   useEffect(() => {
     if (trans) return
-    const warm = () => {
-      Object.values(TRANS_VIDEOS).forEach((d) => {
-        ;[...d.fwd, ...d.rev].forEach((u) => {
-          if (warmed.has(u)) return
-          warmed.add(u)
-          fetch(u, { cache: 'force-cache' }).catch(() => {})
-        })
+    const warm = (urls) => {
+      urls.forEach((u) => {
+        if (warmed.has(u)) return
+        warmed.add(u)
+        fetch(u, { cache: 'force-cache', priority: 'low' }).catch(() => {})
       })
     }
-    const t = window.setTimeout(warm, 1200)
-    return () => window.clearTimeout(t)
+    const t1 = window.setTimeout(() => warm(TRANS_VIDEOS['01'].fwd), 1500)
+    const t2 = window.setTimeout(() => {
+      warm(Object.values(TRANS_VIDEOS).flatMap((d) => [...d.fwd, ...d.rev]))
+    }, 9000)
+    return () => {
+      window.clearTimeout(t1)
+      window.clearTimeout(t2)
+    }
   }, [trans])
 
   /* 视频源切换 + 播放（双源，webm 优先，更小）
