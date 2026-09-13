@@ -28,29 +28,43 @@ function rich(text, hl) {
   return out
 }
 
-/* 视频/动图卡片：静音自动循环播放（与 GIF 表现一致，无需手动点击） */
-function VideoItem({ data, idx }) {
+/* 可见性自适应视频：滚进视口播放、滚出自动暂停。
+   详情页可能同时有多条视频，全部常驻解码是详情页卡顿的最大来源 */
+function AutoVideo({ src, webm, poster, loop = true }) {
   const ref = useRef(null)
   useEffect(() => {
     const v = ref.current
     if (!v) return
     v.muted = true
-    const p = v.play()
-    if (p && p.catch) p.catch(() => {})
+    const io = new IntersectionObserver(
+      (es) =>
+        es.forEach((e) => {
+          if (e.isIntersecting) {
+            const p = v.play()
+            if (p && p.catch) p.catch(() => {})
+          } else {
+            v.pause()
+          }
+        }),
+      { rootMargin: '100px' }
+    )
+    io.observe(v)
+    return () => io.disconnect()
   }, [])
+  return (
+    <video ref={ref} poster={poster} preload="metadata" playsInline loop={loop} muted>
+      {webm && <source src={webm} type="video/webm" />}
+      <source src={src} type="video/mp4" />
+    </video>
+  )
+}
+
+/* 视频/动图卡片：静音自动循环播放（与 GIF 表现一致，无需手动点击） */
+function VideoItem({ data, idx }) {
   return (
     <figure className="pd__item pd__item--video" style={{ '--i': idx }}>
       <div className="pd__video-wrap">
-        <video
-          ref={ref}
-          src={data.video}
-          poster={data.poster}
-          preload="metadata"
-          playsInline
-          autoPlay
-          loop={data.loop !== false}
-          muted
-        />
+        <AutoVideo src={data.video} poster={data.poster} loop={data.loop !== false} />
       </div>
     </figure>
   )
@@ -226,10 +240,7 @@ export default function ProjectDetail({ project, onClose }) {
           /* 通栏视频（宽条目传对象）：静音自动循环 */
           out.push(
             <figure className="pd__item pd__item--wide pd__item--video" key={`wv-${i}`}>
-              <video poster={it.wide.poster} autoPlay muted loop playsInline preload="metadata">
-                {it.wide.videoWebm && <source src={it.wide.videoWebm} type="video/webm" />}
-                <source src={it.wide.video} type="video/mp4" />
-              </video>
+              <AutoVideo src={it.wide.video} webm={it.wide.videoWebm} poster={it.wide.poster} />
             </figure>
           )
         } else {
@@ -752,10 +763,7 @@ export default function ProjectDetail({ project, onClose }) {
         case 'video':
           return (
             <figure className="pb__video" key={i}>
-              <video poster={b.poster} autoPlay muted loop playsInline preload="metadata">
-                {b.webm && <source src={b.webm} type="video/webm" />}
-                <source src={b.src} type="video/mp4" />
-              </video>
+              <AutoVideo src={b.src} webm={b.webm} poster={b.poster} />
             </figure>
           )
 

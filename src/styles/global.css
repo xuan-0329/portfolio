@@ -1724,9 +1724,9 @@ a.contact-list .v:hover,
 .pd__backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(3, 4, 7, 0.88);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  /* 不用 backdrop-filter：Safari 下 blur + 透明度动画会把整层渲染成纯黑（浮层打开黑屏的元凶），
+     且全屏 blur 是持续性的合成开销；近实底色观感一致、渲染成本几乎为零 */
+  background: rgba(3, 4, 7, 0.97);
   animation: pdFade 0.3s ease both;
 }
 @keyframes pdFade { from { opacity: 0; } to { opacity: 1; } }
@@ -1754,10 +1754,8 @@ a.contact-list .v:hover,
   justify-content: space-between;
   gap: 16px;
   padding: 18px 0;
-  /* 实底毛玻璃：吸顶滚动时返回/关闭按钮始终清晰、可点 */
-  background: rgba(3, 4, 7, 0.86);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  /* 近实底：吸顶滚动时返回/关闭按钮始终清晰、可点（不用 blur，避免 Safari 黑块与滚动合成开销） */
+  background: rgba(3, 4, 7, 0.97);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 .pd__idx {
@@ -1891,6 +1889,9 @@ a.contact-list .v:hover,
   border: 1px solid rgba(255, 255, 255, 0.06);
   animation: pdItem 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
   animation-delay: calc(var(--i) * 55ms);
+  /* 视口外条目跳过布局与绘制：详情页常 20+ 张长图，滚动开销大幅下降 */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 480px;
 }
 @keyframes pdItem {
   from { opacity: 0; transform: translate3d(0, 18px, 0); }
@@ -3348,6 +3349,8 @@ a.pb__doc {
 }
 .pb__shot {
   margin: 0;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 520px;
 }
 .pb__shot-cap {
   display: flex;
@@ -3825,9 +3828,8 @@ a.pb__doc {
   justify-content: center;
   /* 四周大幅留边：窗口约占屏幕 80%，不顶满 */
   padding: clamp(28px, 9vh, 72px) clamp(28px, 11vw, 220px);
-  background: rgba(3, 4, 7, 0.82);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  /* 同 .pd__backdrop：去 blur，规避 Safari 透明度动画渲染成黑屏的 bug */
+  background: rgba(3, 4, 7, 0.95);
   animation: pdFade 0.25s ease both;
 }
 .pv__win {

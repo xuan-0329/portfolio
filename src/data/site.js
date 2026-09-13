@@ -63,7 +63,7 @@ export const site = {
     timeline: [
       { y: '2017 — 2020', t: 'UI 设计师', d: '蓝凌 / 智随互动 · 设计规范搭建与产品视觉落地' },
       { y: '2020 — 2022', t: '品牌设计主管', d: '京坤巨将餐饮 · 连锁品牌视觉与物料体系' },
-      { y: '2022 — 2025', t: '品牌设计总监', d: '泰晟时尚 · just one name 品牌 0-1 全案' },
+      { y: '2022 — 2025', t: '品牌设计总监', d: '泰晟时尚 · JUST ONE NAME 品牌 0-1 全案' },
       { y: '2025 — 至今', t: '品牌视觉负责人', d: '罗拉信息科技 · 7 国独立站 SOP / AI 工作流' },
     ],
     edu: { k: '教育背景', v: '四川传媒学院 · 视觉传达 本科（2013-2017）' },
@@ -77,7 +77,7 @@ export const site = {
     projects: [
       {
         id: '01',
-        title: 'just one name',
+        title: 'JUST ONE NAME',
         subtitle: '3C 潮流配饰品牌从 0 到 1 全案搭建',
         year: '2023 — 2025',
         role: '品牌设计总监',
@@ -97,7 +97,7 @@ export const site = {
               key: 'brand', label: '品牌设计', en: 'Brand',
               desc: '品牌符号 / VI 手册 / 视觉定位 — 点击封面可翻阅完整 PDF',
               images: [
-                { cover: '/work/jon/brand-1.jpg', pdf: '/pdf/brand-vi.pdf', title: 'VI 手册 · just one name' },
+                { cover: '/work/jon/brand-1.jpg', pdf: '/pdf/brand-vi.pdf', title: 'VI 手册 · JUST ONE NAME' },
                 { cover: '/work/jon/brand-2.jpg', pdf: '/pdf/brand-standard.pdf', title: '品牌标准化 VIS（中文版）' },
                 { cover: '/work/jon/brand-3.jpg', pdf: '/pdf/brand-standard-en.pdf', title: 'Brand Standard（英文版）' },
                 { cover: '/work/jon/brand-4.jpg', pdf: '/pdf/brand-position.pdf', title: '品牌产品视觉定位' },

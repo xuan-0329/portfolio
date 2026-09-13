@@ -94,10 +94,18 @@ function BgCanvas({ stage, paused }) {
     resize()
 
     let raf = 0
+    /* 首屏滚出视口后完全跳过绘制：200+ 粒子的渐变填充是首屏外最大的持续 GPU 开销 */
+    let visible = true
+    const io = new IntersectionObserver((es) => { visible = es[0]?.isIntersecting ?? true })
+    io.observe(canvas)
     const tick = (now) => {
       if (!alive) return
       raf = requestAnimationFrame(tick)
       const dt = Math.min(48, now - last)
+      if (!visible) {
+        last = now
+        return
+      }
       /* 过渡视频播放期间跳过全部绘制：背景被视频盖住根本看不见，
          但渐变填充会跟视频解码抢 CPU/GPU 造成卡顿——只保留时间推进 */
       if (pausedRef.current) {
@@ -201,6 +209,7 @@ function BgCanvas({ stage, paused }) {
       alive = false
       cancelAnimationFrame(raf)
       ro.disconnect()
+      io.disconnect()
     }
   }, [])
   return <canvas ref={ref} className="hero3__bg" />
@@ -263,10 +272,15 @@ function StageCanvas({ stage, hidden }) {
     ro.observe(canvas)
     resize()
 
+    /* 首屏滚出视口后跳过全屏 drawImage（Ken Burns 每帧都在动，滚出后纯属浪费） */
+    let visible = true
+    const io = new IntersectionObserver((es) => { visible = es[0]?.isIntersecting ?? true })
+    io.observe(canvas)
+
     const loop = (now) => {
       if (!alive) return
       raf = requestAnimationFrame(loop)
-      if (!W || !H) return
+      if (!W || !H || !visible) return
       /* 关键：首屏不等全部图片 —— 当前 stage 的图一到就画。
          原来等 3 张全下完才开始画，弱网下首开是好几秒纯星空 */
       const si = stageRef.current
@@ -289,6 +303,7 @@ function StageCanvas({ stage, hidden }) {
       alive = false
       cancelAnimationFrame(raf)
       ro.disconnect()
+      io.disconnect()
     }
   }, [])
 
