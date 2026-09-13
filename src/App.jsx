@@ -4,6 +4,7 @@ import About from './components/About'
 import Work from './components/Work'
 import Capabilities from './components/Capabilities'
 import Contact from './components/Contact'
+import SoundScape from './components/SoundScape'
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
         <Capabilities />
         <Contact />
       </main>
+      <SoundScape />
     </>
   )
 }
